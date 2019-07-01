@@ -1,14 +1,13 @@
+import Subjects from './src/components/Subjects'
+import Questions from './src/components/Questions'
+import Score from './src/components/Score'
+import Login from './src/components/Auth/Login'
+import Register from './src/components/Auth/Register'
+import Topic from './src/components/Topic';
 import React, {Component} from 'react';
 import {
-    Container,
-    List,
-    Spinner,
-    ListItem,
     Header,
     Title,
-    Content,
-    Card,
-    CardItem,
     Button,
     Left,
     Right,
@@ -16,87 +15,96 @@ import {
     Icon,
     Text
 } from 'native-base';
-import axios from 'axios'
-import {Image, TouchableOpacity} from 'react-native';
-import {createStackNavigator, createAppContainer} from "react-navigation";
-import Subjects from './src/components/Subjects'
-import Questions from './src/components/Questions'
-import Score from './src/components/Score'
-import Login from './src/components/Auth/Login'
-import Register from './src/components/Auth/Register'
+import {View, Dimensions, SafeAreaView, ScrollView, Image} from 'react-native';
+import Profile from './src/components/Profile';
+import Settings from './src/components/Settings';
+import Attempted from './src/components/Attempted';
+import {createAppContainer, createDrawerNavigator, DrawerItems, createStackNavigator} from "react-navigation";
+import image from './src/images/logo.png'
+
 
 class App extends Component {
-    state = {
-        topics: []
-    };
-
-    componentWillMount() {
-        const {navigation} = this.props;
-        const token = navigation.getParam('token', null);
-        var config = {
-            headers: {'Authorization': "Bearer " + token}
-        };
-        axios.get('https://b41f7b32.ngrok.io/api/topics', config).
-        then(response => this.setState({topics: response.data.data})).catch((error)=>{
-            this.props.navigation.navigate('Login');
-        })
-    }
-
-    render() {
-        const {navigation} = this.props;
-        const token = navigation.getParam('token', null);
+    render(props) {
         return (
-            <Container>
+            <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                 <Header>
                     <Left>
-                        <Button transparent>
+                        <Button transparent onPress={() => this.props.navigation.openDrawer()}>
                             <Icon name='menu'/>
                         </Button>
                     </Left>
                     <Body>
-                    <Title>Novice, Proficient, Expert</Title>
+                    <Title><Text>xxx</Text></Title>
                     </Body>
                     <Right/>
                 </Header>
-                <Content>
-                    {
-                        this.state.topics.length ? <List>
-                            {
-                                this.state.topics.map((topic, i) => (
-                                    <ListItem key={i}>
-                                        <TouchableOpacity onPress={() => this.props.navigation.navigate('Subjects', {
-                                            id: topic.id,
-                                            topic: topic.topic_name,
-                                            token: token
-                                        })}>
-                                            <Card>
-                                                <CardItem>
-                                                    <Text>{topic.topic_name}</Text>
-                                                </CardItem>
-                                                <CardItem cardBody>
-                                                    <Image source={{uri: topic.topic_avatar_url}}
-                                                           style={{height: 200, width: null, flex: 1}}/>
-                                                </CardItem>
-                                                <CardItem>
-                                                    <Text> {topic.created_at}</Text>
-                                                </CardItem>
-                                            </Card>
-                                        </TouchableOpacity>
-                                    </ListItem>
-
-                                ))
-                            }
-                        </List> : <Spinner color='red'/>
-                    }
-
-                </Content>
-            </Container>
+                <AppDrawerNavigator/>
+            </View>
         );
     }
 }
 
+const CustomDrawerComponent = (props) => (
+    <SafeAreaView style={{flex: 1}}>
+        <View style={{height: 150, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center'}}>
+            <Image source={image} style={{height: 100, width: 100, borderRadius: 20}}/>
+        </View>
+        <ScrollView>
+            <DrawerItems {...props}/>
+        </ScrollView>
+    </SafeAreaView>
+)
+export const AppDrawerNavigator = createDrawerNavigator({
+    Topic: {
+        screen: Topic,
+        navigationOptions: {
+            drawerIcon: (
+                <Image
+                    style={{width: 24, height: 24}}
+                    source={require("./src/images/icons/focus.png")}
+                />
+            ),
+        }
+    },
+    Profile: {
+        screen: Profile,
+        navigationOptions: {
+            drawerIcon: (
+                <Image
+                    style={{width: 24, height: 24}}
+                    source={require("./src/images/icons/boy.png")}
+                />
+            ),
+        }
+    },
+    Attempted: {
+        screen: Attempted,
+        navigationOptions: {
+            drawerIcon: (
+                <Image
+                    style={{width: 24, height: 24}}
+                    source={require("./src/images/icons/completed-task.png")}
+                />
+            ),
+        }
+    },
+    Settings: {
+        screen: Settings,
+        navigationOptions: {
+            drawerIcon: (
+                <Image
+                    style={{width: 24, height: 24}}
+                    source={require("./src/images/icons/settings-gears.png")}
+                />
+            ),
+        },
+
+    }
+}, {
+    contentComponent: CustomDrawerComponent
+})
 const AppNavigator = createStackNavigator({
-        Home: App,
+        Home: AppDrawerNavigator,
         Subjects: Subjects,
         Questions: Questions,
         Score: Score,
@@ -113,5 +121,3 @@ const AppNavigator = createStackNavigator({
 );
 
 export default createAppContainer(AppNavigator);
-
-

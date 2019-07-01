@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
 import {  Container,List,Spinner, ListItem, Header, Title, Content, Card, CardItem, Button, Left, Right, Body, Icon, Text } from 'native-base';
 import axios from 'axios'
-import { Image,TouchableOpacity } from 'react-native';
+import {Image, TouchableOpacity, View} from 'react-native';
+import SvgUri from 'react-native-svg-uri';
+import Emoji from 'react-native-emoji';
+
 
 export default class Subjects extends Component{
 
     state={
-        subjects: []
+        subjects: [],
+        empty: false
     };
     componentWillMount(){
         const { navigation } = this.props;
@@ -15,14 +19,20 @@ export default class Subjects extends Component{
         var config = {
             headers: {'Authorization': "Bearer " + token}
         };
-        axios.get('https://b41f7b32.ngrok.io/api/subjects/'+itemId,config).
-        then(response=>this.setState({subjects: response.data.data}))
+        axios.get('http://noprex.tk/api/subjects/'+itemId,config).
+        then(response=>{
+            this.setState({subjects: response.data.data.data})
+            if (response.data.data.data.length===0) {
+                this.setState({empty: true})
+            }
+        })
             .catch((error)=>{
                 this.props.navigation.navigate('Login');
             })
     }
     render(){
         const { navigation } = this.props;
+        const avatar= navigation.getParam('topic_avatar', null);
         const topic = navigation.getParam('topic', 'Unknown');
         const token = navigation.getParam('token', null);
         return(
@@ -30,15 +40,16 @@ export default class Subjects extends Component{
                 <Header>
                     <Left>
                         <Button transparent>
-                            <Icon name='menu' />
+                            <Icon name='arrow-back'/>
                         </Button>
                     </Left>
                     <Body>
-                    <Title><Text>{topic} Subjects</Text></Title>
+                    <Title><Text>{topic}</Text></Title>
                     </Body>
-                    <Right />
+                    <Right/>
                 </Header>
                 <Content>
+                    <View style={{flex: 1, alignItems: 'center',justifyContent: 'center'}}>
                     {this.state.subjects.length ?  <List>
                         {
                             this.state.subjects.map((subject,i)=>(
@@ -46,10 +57,7 @@ export default class Subjects extends Component{
                                 <TouchableOpacity onPress={()=>this.props.navigation.navigate('Questions',{id: subject.id,subject: subject,token: token})}>
                                     <Card >
                                         <CardItem>
-                                            <Text>{subject.subject_name}</Text>
-                                        </CardItem>
-                                        <CardItem cardBody>
-                                            <Image source={{uri: subject.subject_avatar_url}} style={{height: 200, width: null, flex: 1}}/>
+                                            <Text style={{fontSize: 18}}>{subject.subject_name}</Text>
                                         </CardItem>
                                         <CardItem>
                                             <Text> {subject.created_at}</Text>
@@ -59,8 +67,8 @@ export default class Subjects extends Component{
                                 </ListItem>
                             ))
                         }
-                    </List> : <Spinner color='blue' />}
-
+                    </List> : this.state.empty ? <View style={{flex: 1, alignItems: 'center',justifyContent: 'center'}}><Text style={{fontSize: 20}}>No Subjects found for this topic</Text><Emoji name="disappointed" style={{fontSize: 100}} /><Emoji name="rocket" style={{fontSize: 100}} /></View>  : <Spinner color='blue' />}
+                    </View>
                 </Content>
             </Container>
 

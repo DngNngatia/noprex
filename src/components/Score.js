@@ -1,52 +1,63 @@
 import React, {Component} from 'react';
 import {Container, Header, Title, Content, Card, CardItem, Button, Left, Right, Body, Icon, Text} from 'native-base';
 import axios from 'axios'
-import {Image, TouchableOpacity, Dimensions, ScrollView} from 'react-native';
+import {Image, TouchableOpacity, Dimensions, ScrollView, View} from 'react-native';
+import Emoji from 'react-native-emoji';
+
+
 import {
-    LineChart,
-    BarChart,
-    PieChart,
     ProgressChart,
-    ContributionGraph,
-    StackedBarChart
 } from 'react-native-chart-kit'
 
 export default class Score extends Component {
     state = {
         total: 0
     }
-    componentWillMount(){
+
+    componentWillMount() {
         const {navigation} = this.props;
         const token = navigation.getParam('token', null);
         const subject = navigation.getParam('subject', null);
         const Score = navigation.getParam('Score', 0);
-        var config = {
+        const array_length = navigation.getParam('array_length', null);
+        let config = {
             headers: {'Authorization': "Bearer " + token}
         };
-        // axios.post('https://b41f7b32.ngrok.io/api/scores/'+subject.id+'/subjects',config,{score: Score}).
-        // then(response=>console.log(response.data.data))
-        //     .catch((error)=>{
-        //         this.props.navigation.navigate('Login');
-        //     })
+        axios.post('http://noprex.tk/api/scores/' + subject.id + '/subjects', {score: Score / array_length * 10}, config).then(response => console.log(response.data.data))
+            .catch((error) => {
+                this.props.navigation.navigate('Home');
+            })
+    }
+
+    renderEmoji(score) {
+        if (score < 0.25) {
+            return <Emoji name="disappointed" style={{fontSize: 100}}/>
+        } else if (score >= 0.25 && score < 0.5) {
+            return <Emoji name="smile" style={{fontSize: 100}}/>
+        } else if (score >= 0.5 && score < 0.75) {
+            return <Emoji name="fire" style={{fontSize: 100}}/>
+        } else if (score >= 0.75) {
+            return <Emoji name="100" style={{fontSize: 100}}/>
+        }
     }
 
     render() {
         const screenWidth = Dimensions.get('window').width
         const {navigation} = this.props;
-        const itemId = navigation.getParam('id', null);
+        const array_length = navigation.getParam('array_length', null);
         const Score = navigation.getParam('Score', 0);
         const subject = navigation.getParam('subject', null);
-        const data = [Score / 100, 0.25, 0.5, 0.75]
+        const data = [Score / array_length, 0.25, 0.5, 0.75]
         return (
             <Container>
                 <Header>
                     <Left>
                         <Button transparent>
-                            <Icon name='menu'/>
+                            <Icon name='arrow-back'/>
                         </Button>
                     </Left>
                     <Body>
-                    <Title><Text>Total score</Text></Title>
+                        <Title><Text>Score</Text></Title>
                     </Body>
                     <Right/>
                 </Header>
@@ -57,8 +68,10 @@ export default class Score extends Component {
                                 <Text>{subject.subject_name}</Text>
                             </CardItem>
                             <CardItem cardBody>
-                                <Image source={{uri: subject.subject_avatar_url}}
-                                       style={{height: 200, width: '100%', flex: 1}}/>
+                                {
+                                    this.renderEmoji(Score / array_length)
+                                }
+                                <Text style={{fontSize: 20}}>{Score / array_length * 100}%</Text>
                             </CardItem>
                         </Card>
                         <ProgressChart
@@ -66,12 +79,12 @@ export default class Score extends Component {
                             width={screenWidth}
                             height={220}
                             chartConfig={{
-                                backgroundColor: '#ffffff',
-                                backgroundGradientFrom: '#fb8c00',
-                                backgroundGradientTo: '#ffa726',
+                                backgroundColor: '#ffffff00',
+                                backgroundGradientFrom: '#FFFF00',
+                                backgroundGradientTo: '#0000FF',
                                 color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                                 style: {
-                                    borderRadius: 16
+                                    borderRadius: 10
                                 }
                             }}
                         />

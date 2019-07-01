@@ -41,7 +41,7 @@ export default class Questions extends Component {
         var config = {
             headers: {'Authorization': "Bearer " + token}
         };
-        axios.get('https://b41f7b32.ngrok.io/api/questions/' + itemId, config)
+        axios.get('http://noprex.tk/api/questions/' + itemId, config)
             .then(response => this.setState({questions: response.data.data}))
             .catch((error)=>{
                 this.props.navigation.navigate('Login');
@@ -67,20 +67,20 @@ export default class Questions extends Component {
             <Container>
                 <Header>
                     <Left>
-                        <Button transparent>
-                            <Icon name='menu'/>
+                        <Button transparent >
+                            <Icon name='arrow-back'/>
                         </Button>
                     </Left>
                     <Body>
-                    <Title><Text>Questions</Text></Title>
+                    <Title><Text>{subject.subject_name}</Text></Title>
                     </Body>
                     <Right/>
                 </Header>
                 <Content>
-                    <ScrollView>
-                        {this.state.questions.length > 0 && this.state.index != this.state.questions.length - 1 ? <View>
-                            <Card style={{elevation: 3}}>
-                                <CardItem style={{flexalignItems: 'center', alignItems: 'center'}}>
+                    <ScrollView contentContainerStyle={{flex: 1,justifyContent: 'center', alignItems: 'center'}}>
+                        {this.state.questions.length > 0 && this.state.index !== this.state.questions.length - 1 ? <View>
+                            <Card style={{elevation: 3, width: 330}}>
+                                <CardItem >
                                     <CountDown
                                         until={this.state.questions[this.state.index].time_allocated}
                                         size={20}
@@ -101,7 +101,7 @@ export default class Questions extends Component {
                                             this.state.questions[this.state.index].answer.map((answer, i) => (
                                                 this.state.ListClickDisabled ?
                                                     <ListItem
-                                                        onPress={() => this.state.questions[this.state.index].correct_answer == i ? this.updateState() : this.setState({
+                                                        onPress={() => this.state.questions[this.state.index].correct_answer === i ? this.updateState() : this.setState({
                                                             answer_correct: 2,
                                                             counter: false,
                                                             ListClickDisabled: false
@@ -119,10 +119,10 @@ export default class Questions extends Component {
                                 </CardItem>
                                 <CardItem>
                                     {
-                                        this.state.answer_correct == 0 ?
+                                        this.state.answer_correct === 0 ?
                                             null
                                             :
-                                            this.state.answer_correct == 1 ? <Text style={{
+                                            this.state.answer_correct === 1 ? <Text style={{
                                                     backgroundColor: '#008000',
                                                     flex: 1,
                                                     fontSize: 20,
@@ -150,11 +150,12 @@ export default class Questions extends Component {
                                         })}><Text>Next Question</Text></Button>}
                                 </CardItem>
                             </Card>
-                        </View> : this.state.questions.length == 0 ?
+                        </View> : this.state.questions.length === 0 ?
                             <Spinner/> : this.props.navigation.navigate('Score', {
                                 id: itemId,
                                 Score: this.state.Score,
                                 subject: subject,
+                                array_length: this.state.questions.length,
                                 token: token
                             })}
                     </ScrollView>

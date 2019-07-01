@@ -17,7 +17,7 @@ export default class Login extends Component {
 
     register() {
         this.setState({spinning: true, errors: ''})
-        axios.post('https://b41f7b32.ngrok.io/api/register', {
+        axios.post('http://noprex.tk/api/register', {
             name: this.state.name,
             email: this.state.email,
             password: this.state.password
