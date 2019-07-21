@@ -3,7 +3,7 @@ import {Container, Text, Spinner, Button, View, List, ListItem, Content, Form, I
 import {Image} from 'react-native';
 import image from '../../images/logo.png'
 import axios from 'axios'
-import {AsyncStorage} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 
 export default class Login extends Component {
@@ -27,22 +27,28 @@ export default class Login extends Component {
     }
 
     login() {
-        this.setState({spinning: true, errors: ''})
-        axios.post('http://noprex.tk/api/login', {
-            email: this.state.email,
-            password: this.state.password,
-            spinning: false
-        }).then((response) => {
-            this.storeKey(response.data.access_token);
-            this.props.navigation.navigate('Home', {
-                token: response.data.access_token
-            })
-            this.setState({spinning: false})
+        if (this.state.email && this.state.password) {
+            this.setState({spinning: true, errors: ''})
+            axios.post('http://noprex.tk/api/login', {
+                email: this.state.email,
+                password: this.state.password,
+                spinning: false
+            }).then((response) => {
+                this.storeKey(response.data.access_token);
+                this.props.navigation.navigate('Home', {
+                    token: response.data.access_token
+                })
+                this.setState({spinning: false})
 
-        }).catch((error) => {
-            console.log(error.response)
-            this.setState({errors: error.response.data.message, spinning: false})
-        })
+            }).catch((error) => {
+                console.log(error.response)
+                this.setState({errors: error.response.data.message, spinning: false})
+            })
+        }
+        else{
+            this.setState({spinning: false, errors: 'Email and Password Required'})
+        }
+
     }
 
     render() {

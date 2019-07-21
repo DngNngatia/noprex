@@ -6,21 +6,19 @@ import {
     Button,
     View,
     Content,
-    Left, Icon, Body, Title, Right, Header, Card, CardItem
+    Left, Icon, Body, Title, Right, Header, ListItem
 } from 'native-base';
-import { FlatList} from 'react-native';
+import {FlatList} from 'react-native';
 import axios from 'axios'
-import {AsyncStorage} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import Emoji from "react-native-emoji";
-import SvgUri from "react-native-svg-uri";
-import ViewMoreText from "react-native-view-more-text";
-
 
 
 export default class Attempted extends Component {
     state = {
         attempted: [],
-        empty: true
+        empty: false,
+        token: ''
     }
     retrieveData = async () => {
         try {
@@ -29,10 +27,15 @@ export default class Attempted extends Component {
                 let config = {
                     headers: {'Authorization': "Bearer " + value}
                 };
-                axios.get('http://noprex.tk/api/user/completed', config).then(response => this.setState({
-                    attempted: response.data.data,
-                    empty: false
-                })).catch((error) => {
+                axios.get('http://noprex.tk/api/user/completed', config).then(response => {
+                    if (response.data.data.length === 0) {
+                        this.setState({empty: true})
+                    }
+                    this.setState({
+                        attempted: response.data.data,
+                        token: value
+                    })
+                }).catch((error) => {
                     this.props.navigation.navigate('Login');
                 })
             }
@@ -40,15 +43,16 @@ export default class Attempted extends Component {
             console.log(error)
         }
     };
-    renderEmoji(score){
-        if (score<25) {
-            return <Emoji name="disappointed" style={{fontSize: 100}} />
-        }else if(score>=25 && score<50){
-            return <Emoji name="smile" style={{fontSize: 100}} />
-        }else if(score>=50 && score< 75){
-            return <Emoji name="fire" style={{fontSize: 100}} />
-        }else if(score>=75){
-            return <Emoji name="100" style={{fontSize: 100}} />
+
+    renderEmoji(score) {
+        if (score < 25) {
+            return <Emoji name="disappointed" style={{fontSize: 60}}/>
+        } else if (score >= 25 && score < 50) {
+            return <Emoji name="smile" style={{fontSize: 60}}/>
+        } else if (score >= 50 && score < 75) {
+            return <Emoji name="fire" style={{fontSize: 60}}/>
+        } else if (score >= 75) {
+            return <Emoji name="100" style={{fontSize: 60}}/>
         }
     }
 
@@ -56,6 +60,7 @@ export default class Attempted extends Component {
         this.retrieveData();
 
     }
+
     render() {
         return (
             <Container>
@@ -72,23 +77,36 @@ export default class Attempted extends Component {
                 </Header>
                 <Content>
                     <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                        { this.state.empty ? <Spinner/> :
+                        {this.state.empty ? this.state.empty ?
+                            <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                                <Text> You have not attempted any IQ quiz please check out our awesome IQ
+                                    questions</Text>
+                            </View>
+                            : <Spinner/> :
                             <FlatList
                                 data={this.state.attempted}
-                                renderItem={({ item }) => (
-                                    <Card>
-                                        <CardItem>
-                                            <Text style={{fontSize: 15, flex: 1, alignItems: 'center', justifyContent: 'center'}}>{item.subject.subject_name}</Text>
-                                        </CardItem>
-                                        <CardItem cardBody>
-                                            <Text style={{fontSize: 20, color: 'green', flex: 1, alignItems: 'center', justifyContent: 'center'}}>{item.score}%</Text>
-                                        </CardItem>
-                                        <CardItem>
-                                            {this.renderEmoji(item.score)}
-                                        </CardItem>
-                                    </Card>
+                                renderItem={({item}) => (
+                                    <ListItem style={{
+                                        flex: 1,
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Text>{item.subject.subject_name}</Text>
+                                        <Text>{Math.round(item.score)}%</Text>
+                                        {this.renderEmoji(item.score)}
+                                        <Button onPress={() => {
+                                            this.props.navigation.navigate('Review', {
+                                                id: item.subject.id,
+                                                subject: item.subject,
+                                                token: this.state.token
+                                            })
+                                        }} small success>
+                                            <Text>Review</Text>
+                                        </Button>
+                                    </ListItem>
                                 )}
-                                numColumns={2}
+                                numColumns={1}
                                 keyExtractor={(item, index) => index}
                             />
                         }

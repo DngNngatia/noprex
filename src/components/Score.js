@@ -23,7 +23,7 @@ export default class Score extends Component {
         let config = {
             headers: {'Authorization': "Bearer " + token}
         };
-        axios.post('http://noprex.tk/api/scores/' + subject.id + '/subjects', {score: Score / array_length * 10}, config).then(response => console.log(response.data.data))
+        axios.post('http://noprex.tk/api/scores/' + subject.id + '/subjects', {score: Score / array_length * 100}, config).then(response => console.log(response.data.data))
             .catch((error) => {
                 this.props.navigation.navigate('Home');
             })
@@ -52,7 +52,7 @@ export default class Score extends Component {
             <Container>
                 <Header>
                     <Left>
-                        <Button transparent>
+                        <Button transparent onPress={() => this.props.navigation.goBack()}>
                             <Icon name='arrow-back'/>
                         </Button>
                     </Left>
@@ -71,23 +71,28 @@ export default class Score extends Component {
                                 {
                                     this.renderEmoji(Score / array_length)
                                 }
-                                <Text style={{fontSize: 20}}>{Score / array_length * 100}%</Text>
+                                <Text style={{fontSize: 20}}>{Math.round(Score / array_length * 100)}%</Text>
                             </CardItem>
                         </Card>
                         <ProgressChart
                             data={data}
                             width={screenWidth}
-                            height={220}
+                            height={200}
                             chartConfig={{
                                 backgroundColor: '#ffffff00',
                                 backgroundGradientFrom: '#FFFF00',
                                 backgroundGradientTo: '#0000FF',
-                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                                color: (opacity = 1) => `rgba(175, 255, 255, ${opacity})`,
                                 style: {
                                     borderRadius: 10
                                 }
                             }}
                         />
+                        <View>
+                            <Text style={{fontFamily: 'sans-serif-thin'}}>@noprex is the leading app in keeping
+                                developers upto-date with the changing software
+                                engineering world</Text>
+                        </View>
                     </ScrollView>
                 </Content>
             </Container>

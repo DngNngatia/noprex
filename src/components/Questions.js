@@ -22,6 +22,7 @@ import {
     Icon
 } from 'native-base';
 import axios from 'axios'
+import Snackbar from 'react-native-snackbar';
 
 export default class Questions extends Component {
     state = {
@@ -31,7 +32,10 @@ export default class Questions extends Component {
         timeGiven: 20,
         ListClickDisabled: true,
         answer_correct: 0,
-        counter: true
+        counter: true,
+        visible: false,
+        message: '',
+        empty: false
     }
 
     componentWillMount() {
@@ -42,18 +46,44 @@ export default class Questions extends Component {
             headers: {'Authorization': "Bearer " + token}
         };
         axios.get('http://noprex.tk/api/questions/' + itemId, config)
-            .then(response => this.setState({questions: response.data.data}))
+            .then(response => {
+                if (response.data.data.length === 0) {
+                    this.setState({ empty : true})
+                }
+                this.setState({questions: response.data.data})
+            })
             .catch((error) => {
                 this.props.navigation.navigate('Login');
             })
     }
 
     updateState() {
+        Snackbar.show({
+            title: 'correct answer',
+            backgroundColor: 'green',
+            duration: Snackbar.LENGTH_LONG,
+        });
         this.setState({
-            Score: this.state.Score + 5,
+            Score: this.state.Score + 1,
             answer_correct: 1,
             counter: false,
+            visible: true,
+            message: 'correct answer',
             timeGiven: 0,
+            ListClickDisabled: false
+        })
+    }
+    wrongAnswer(){
+        Snackbar.show({
+            title: 'wrong answer',
+            backgroundColor: 'red',
+            duration: Snackbar.LENGTH_LONG,
+        });
+        this.setState({
+            answer_correct: 2,
+            visible: true,
+            message: 'wrong answer',
+            counter: false,
             ListClickDisabled: false
         })
     }
@@ -67,7 +97,7 @@ export default class Questions extends Component {
             <Container>
                 <Header>
                     <Left>
-                        <Button transparent>
+                        <Button transparent  onPress={() => this.props.navigation.goBack()}>
                             <Icon name='arrow-back'/>
                         </Button>
                     </Left>
@@ -82,20 +112,23 @@ export default class Questions extends Component {
                             <Text>All the best!!</Text>}
                         {this.state.questions.length > 0 && this.state.index !== this.state.questions.length - 1 ?
                             <View>
-                                <Card style={{elevation: 3, width: 330}}>
+                                <Card style={{elevation: 3}}>
                                     <CardItem>
                                         <CountDown
                                             until={this.state.questions[this.state.index].time_allocated}
                                             size={20}
-                                            onFinish={() => this.setState({
-                                                answer_correct: 2,
-                                                counter: false,
-                                                ListClickDisabled: false
-                                            })}
+                                            onFinish={() => {
+                                                if (this.state.answer_correct === 0 ){
+                                                this.setState({
+                                                    answer_correct: 2,
+                                                    counter: false,
+                                                    ListClickDisabled: false
+                                                })
+                                            }}}
                                         />
                                     </CardItem>
                                     <CardItem cardBody>
-                                        <Text>{this.state.questions[this.state.index].question}</Text>
+                                        <Text style={{ fontFamily: 'Roboto' }}>{this.state.questions[this.state.index].question}</Text>
                                     </CardItem>
                                     <CardItem>
                                         <List>
@@ -104,16 +137,12 @@ export default class Questions extends Component {
                                                 this.state.questions[this.state.index].answer.map((answer, i) => (
                                                     this.state.ListClickDisabled ?
                                                         <ListItem
-                                                            onPress={() => this.state.questions[this.state.index].correct_answer === i ? this.updateState() : this.setState({
-                                                                answer_correct: 2,
-                                                                counter: false,
-                                                                ListClickDisabled: false
-                                                            })} key={i}>
-                                                            <Text>{i + 1}. {answer.answer}</Text>
+                                                            onPress={() => this.state.questions[this.state.index].correct_answer === i ? this.updateState() : this.wrongAnswer()} key={i}>
+                                                            <Text style={{ fontFamily: 'sans-serif-thin' }}>{i + 1}. {answer.answer}</Text>
                                                         </ListItem>
                                                         :
                                                         <ListItem key={i}>
-                                                            <Text>{i + 1}. {answer.answer}</Text>
+                                                            <Text style={{ fontFamily: 'sans-serif-thin' }}>{i + 1}. {answer.answer}</Text>
                                                         </ListItem>
 
                                                 ))
@@ -155,7 +184,9 @@ export default class Questions extends Component {
                                     </CardItem>
                                 </Card>
                             </View> : this.state.questions.length === 0 ?
-                                <Spinner/> : this.props.navigation.navigate('Score', {
+                                this.state.empty ? <View style={{flex: 1, alignItems: 'center',justifyContent: 'center'}}>
+                                    <Text>Oops!! something wrong on our end come back later.</Text>
+                                </View> : <Spinner color='red'/> : this.props.navigation.navigate('Score', {
                                     id: itemId,
                                     Score: this.state.Score,
                                     subject: subject,

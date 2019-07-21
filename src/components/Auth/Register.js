@@ -16,17 +16,23 @@ export default class Login extends Component {
     }
 
     register() {
-        this.setState({spinning: true, errors: ''})
-        axios.post('http://noprex.tk/api/register', {
-            name: this.state.name,
-            email: this.state.email,
-            password: this.state.password
-        }).then((response) => {
-            this.props.navigation.navigate('Login')
-            this.setState({spinning: true})
-        }).catch((error) => {
-            this.setState({errors: error.response.data.data.email[0], spinning: false})
-        })
+        if (this.state.name && this.state.email && this.state.password && this.state.password.length >= 6) {
+            this.setState({spinning: true, errors: ''})
+            axios.post('http://noprex.tk/api/register', {
+                name: this.state.name,
+                email: this.state.email,
+                password: this.state.password
+            }).then((response) => {
+                this.props.navigation.navigate('Login')
+                this.setState({spinning: true})
+            }).catch((error) => {
+                this.setState({errors: error.response.data.data.email[0], spinning: false})
+            })
+        }else if(!this.state.name || !this.state.email || !this.state.password){
+            this.setState({spinning: false, errors: 'Please fill the missing field(s)'})
+        }else if(this.state.password.length < 6) {
+            this.setState({spinning: false, errors: 'Password must be more than six characters'})
+        }
     }
 
     render() {
@@ -35,7 +41,7 @@ export default class Login extends Component {
                 <Content contentContainerStyle={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                     <Image source={image} style={{height: 100, width: 100}}/>
                     {
-                        this.state.errors != '' ?
+                        this.state.errors !== '' ?
                             <Text style={{backgroundColor: '#FF0000', fontSize: 19}}>{this.state.errors}</Text> : null
                     }
                     <Form style={{height: 300, width: 300, padding: 10, margin: 5}}>

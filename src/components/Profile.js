@@ -16,8 +16,8 @@ import {
 } from 'native-base';
 import {Image} from 'react-native';
 import axios from 'axios'
-import image from '../images/logo.png';
-import {AsyncStorage} from 'react-native';
+import image from '../images/icons/boy.png';
+import AsyncStorage from '@react-native-community/async-storage';
 import ImagePicker from 'react-native-image-picker';
 
 
@@ -31,7 +31,10 @@ export default class Profile extends Component {
         address: '',
         phone: '',
         token: '',
-        spinner: false
+        spinner: false,
+        preview: null,
+        uri: null,
+        error: ''
     }
     retrieveData = async () => {
         try {
@@ -44,7 +47,7 @@ export default class Profile extends Component {
                     name: response.data.name,
                     email: response.data.email,
                     title: response.data.title,
-                    profile_image: response.data.profile_image,
+                    profile_image: response.data.preview,
                     description: response.data.description,
                     address: response.data.address,
                     phone: response.data.phone,
@@ -74,30 +77,39 @@ export default class Profile extends Component {
     }
 
     updateProfile() {
-        this.setState({spinner: true});
-        let config = {
-            headers: {'Authorization': "Bearer " + this.state.token}
-        };
-        let data = {
-            name: this.state.name,
-            address: this.state.address,
-            title: this.state.title,
-            description: this.state.description,
-            phone: this.state.phone,
-            profile_image: this.state.profile_image
+        if(this.state.name) {
+            this.setState({spinner: true});
+            let formData = new FormData();
+            let config = {
+                headers: {'Authorization': "Bearer " + this.state.token, "Content-Type": "multipart/form-data"}
+            };
+            formData.append("name", this.state.name);
+            formData.append("address", this.state.address);
+            formData.append("title", this.state.title);
+            formData.append("description", this.state.description);
+            formData.append("phone", this.state.phone);
+            formData.append("profile_image", {uri: this.state.uri.uri, name: this.state.uri.fileName, type: 'image/*'});
+            formData.append('Content-Type', 'image/*');
+
+
+            axios.post('http://noprex.tk/api/user/update', formData, config).then(response => {
+                console.log(response.data.data)
+                this.setState({
+                    name: response.data.data.name,
+                    email: response.data.data.email,
+                    title: response.data.data.title,
+                    profile_image: response.data.data.profile_image,
+                    description: response.data.data.description,
+                    address: response.data.data.address,
+                    phone: response.data.data.phone,
+                    spinner: false
+                })
+            }).catch((error) => {
+                this.props.navigation.navigate('Login');
+            })
+        }else{
+            this.setState({error: 'Name is required'})
         }
-        axios.post('http://noprex.tk/api/user/update', data, config).then(response => this.setState({
-            name: response.data.data.name,
-            email: response.data.data.email,
-            title: response.data.data.title,
-            profile_image: response.data.data.profile_image,
-            description: response.data.data.description,
-            address: response.data.data.address,
-            phone: response.data.data.phone,
-            spinner: false
-        })).catch((error) => {
-            this.props.navigation.navigate('Login');
-        })
     }
 
     uploadImage() {
@@ -114,10 +126,10 @@ export default class Profile extends Component {
             } else if (response.error) {
                 console.log('ImagePicker Error: ', response.error);
             } else {
-                // const source = { uri: response.uri };
-                // //const source = {uri: 'data:image/jpeg;base64,' + response.data};
+                const source = {uri: response.uri};
                 this.setState({
-                    profile_image: response.uri,
+                    preview: source,
+                    uri: response
                 });
             }
         });
@@ -138,8 +150,11 @@ export default class Profile extends Component {
                     <Right/>
                 </Header>
                 <Content contentContainerStyle={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                    {
+                        this.state.error ?? <Text>{this.state.error}</Text>
+                    }
                     <Image style={{height: 100, width: 100, borderRadius: 10, borderWidth: 3, borderColor: 'black'}}
-                           source={this.state.profile_image ? 'http://noprex.tk/' + this.state.profile_image : image}/>
+                           source={this.state.profile_image ? {uri: 'http://noprex.tk/' + this.state.profile_image }: this.state.preview ? this.state.preview : image}/>
                     <Form style={{width: 300, padding: 10, margin: 5}}>
                         <Item>
                             <Button onPress={() => this.uploadImage()} light>
