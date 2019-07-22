@@ -151,7 +151,7 @@ export default class Profile extends Component {
                 </Header>
                 <Content contentContainerStyle={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                     {
-                        this.state.error ?? <Text>{this.state.error}</Text>
+                        this.state.error ? <Text>{this.state.error}</Text> : <Text/>
                     }
                     <Image style={{height: 100, width: 100, borderRadius: 10, borderWidth: 3, borderColor: 'black'}}
                            source={this.state.profile_image ? {uri: 'http://noprex.tk/' + this.state.profile_image }: this.state.preview ? this.state.preview : image}/>

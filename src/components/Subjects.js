@@ -172,7 +172,7 @@ export default class Subjects extends Component {
                                                         <Button light onPress={() => this.like(subject)}>
                                                             {
                                                                 this.state.loading ? <Icon active name="train"/> :
-                                                                    <Icon active name="thumbs-down"/>
+                                                                    <Icon active name="thumbs-up"/>
                                                             }
 
                                                             <Text>{subject.likes}</Text>

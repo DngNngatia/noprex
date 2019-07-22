@@ -61,7 +61,7 @@ export default class Questions extends Component {
         Snackbar.show({
             title: 'correct answer',
             backgroundColor: 'green',
-            duration: Snackbar.LENGTH_LONG,
+            duration: Snackbar.LENGTH_SHORT,
         });
         this.setState({
             Score: this.state.Score + 1,

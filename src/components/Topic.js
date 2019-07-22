@@ -64,9 +64,9 @@ export default class Topic extends Component {
         let config = {
             headers: {'Authorization': "Bearer " + token}
         };
+        console.log(this.state.nextPageUrl)
         axios.get(this.state.nextPageUrl, config).then(response => {
-            console.log(response.data)
-            if (response.data.message === "No results found" || response.data.message === "Search query is empty!!" || response.data.message === "success") {
+            if (response.data.message === "No results found" || response.data.message === "Search query is empty!!" || response.data.message === "Noprex") {
                 this.setState({
                     message: response.data.message,
                     total: response.data.data.total,
@@ -100,7 +100,7 @@ export default class Topic extends Component {
         };
         console.log(this.state.prevPageUrl)
         axios.get(this.state.prevPageUrl, config).then(response => {
-            if (response.data.message === "No results found" || response.data.message === "Search query is empty!!") {
+            if (response.data.message === "No results found" || response.data.message === "Search query is empty!!" || response.data.message === "Noprex") {
                 this.setState({
                     message: response.data.message,
                     total: response.data.data.total,
@@ -172,7 +172,7 @@ export default class Topic extends Component {
                 headers: {'Authorization': "Bearer " + token}
             };
             axios.get('http://noprex.tk/api/search/topic/' + this.state.query, config).then(response => {
-                if (response.data.message === "No results found" || response.data.message === "Search query is empty!!") {
+                if (response.data.message === "No results found" || response.data.message === "Search query is empty!!" || response.data.message === "Noprex") {
                     this.setState({
                         message: response.data.message,
                         total: response.data.data.total,
