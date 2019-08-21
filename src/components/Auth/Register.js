@@ -13,7 +13,7 @@ export default class Login extends Component {
         password: '',
         errors: '',
         spinning: false
-    }
+    };
 
     register() {
         if (this.state.name && this.state.email && this.state.password && this.state.password.length >= 6) {
@@ -32,6 +32,8 @@ export default class Login extends Component {
             this.setState({spinning: false, errors: 'Please fill the missing field(s)'})
         }else if(this.state.password.length < 6) {
             this.setState({spinning: false, errors: 'Password must be more than six characters'})
+        }else{
+            this.setState({spinning: false, errors: 'Unknown error occurred'})
         }
     }
 

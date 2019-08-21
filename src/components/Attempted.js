@@ -12,6 +12,7 @@ import {FlatList} from 'react-native';
 import axios from 'axios'
 import AsyncStorage from '@react-native-community/async-storage';
 import Emoji from "react-native-emoji";
+import Admob from "./Admob";
 
 
 export default class Attempted extends Component {
@@ -92,6 +93,7 @@ export default class Attempted extends Component {
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}>
+                                        <Admob/>
                                         <Text>{item.subject.subject_name}</Text>
                                         <Text>{Math.round(item.score)}%</Text>
                                         {this.renderEmoji(item.score)}

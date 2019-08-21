@@ -4,8 +4,11 @@ import Score from './src/components/Score'
 import Login from './src/components/Auth/Login'
 import Register from './src/components/Auth/Register'
 import Topic from './src/components/Topic'
-import Logout from  './src/components/Logout'
-import Review from  './src/components/Review'
+import Logout from './src/components/Logout'
+import Review from './src/components/Review'
+import ResetPassword from './src/components/Auth/ResetPassword'
+import OtpReset from './src/components/Auth/OtpReset'
+import Admob from './src/components/Admob'
 import React, {Component} from 'react';
 import {
     Header,
@@ -22,10 +25,14 @@ import Profile from './src/components/Profile';
 import GSettings from './src/components/GSettings';
 import Attempted from './src/components/Attempted';
 import Comments from './src/components/Comments';
+import Donate from './src/components/Donate';
+import  Mpesa from './src/components/Mpesa';
+import  Paypal from './src/components/Paypal';
 import {createAppContainer, createDrawerNavigator, DrawerItems, createStackNavigator} from "react-navigation";
 import image from './src/images/logo.png'
 
 console.disableYellowBox = true;
+
 class App extends Component {
     render(props) {
         return (
@@ -103,12 +110,24 @@ export const AppDrawerNavigator = createDrawerNavigator({
         },
 
     },
+    Donate: {
+        screen: Donate,
+        navigationOptions: {
+            drawerIcon: (
+                <Image
+                    style={{width: 24, height: 24}}
+                    source={require("./src/images/icons/donate.png")}
+                />
+            ),
+        },
+
+    },
     Logout: {
         screen: Logout,
         navigationOptions: {
             drawerIcon: (
                 <Image
-                    style={{width: 24, height: 24}}
+                    style={{width: 30, height: 30}}
                     source={require("./src/images/icons/logout.png")}
                 />
             ),
@@ -126,7 +145,14 @@ const AppNavigator = createStackNavigator({
         Login: Login,
         Register: Register,
         Review: Review,
-        Comments: Comments
+        Comments: Comments,
+        ResetPassword: ResetPassword,
+        OtpReset: OtpReset,
+        Donate: Donate,
+        Mpesa: Mpesa,
+        Paypal: Paypal,
+        Admob: Admob
+
 
     },
     {

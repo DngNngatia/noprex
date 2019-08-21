@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Image, TouchableOpacity, AsyncStorage, ScrollView} from 'react-native';
+import {BackHandler, ScrollView, Alert,Dimensions} from 'react-native';
 import CountDown from 'react-native-countdown-component';
 import {
     Container,
@@ -23,6 +23,11 @@ import {
 } from 'native-base';
 import axios from 'axios'
 import Snackbar from 'react-native-snackbar';
+import AsyncStorage from '@react-native-community/async-storage';
+import {DisplayHTML} from "react-native-display-html";
+import HTML from "react-native-render-html";
+import Admob from "./Admob";
+
 
 export default class Questions extends Component {
     state = {
@@ -36,25 +41,87 @@ export default class Questions extends Component {
         visible: false,
         message: '',
         empty: false
+    };
+
+    componentDidMount() {
+        this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
     }
 
-    componentWillMount() {
+    componentWillUnmount() {
+        this.backHandler.remove()
+    }
+
+    handleBackPress = () => {
+        if(this.state.index !== this.state.questions.length -1){
+            this.storeKey({
+                index: this.state.answer_correct === 1 || 2 ? this.state.index+1 : this.state.index,
+                score: this.state.score
+            }).then(() => {
+                return true;
+            })
+        }else{
+            return true;
+        }
+
+    };
+
+    async removeItemValue(key) {
+        try {
+            await AsyncStorage.removeItem(key);
+            return true;
+        } catch (exception) {
+            return false;
+        }
+    }
+
+    async storeKey(key) {
+        try {
+            const {navigation} = this.props;
+            const itemId = navigation.getParam('id', null);
+            await AsyncStorage.setItem('subject' + itemId, JSON.stringify(key));
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async componentWillMount() {
+
         const {navigation} = this.props;
         const itemId = navigation.getParam('id', null);
         const token = navigation.getParam('token', null);
-        var config = {
+        let config = {
             headers: {'Authorization': "Bearer " + token}
         };
         axios.get('http://noprex.tk/api/questions/' + itemId, config)
             .then(response => {
                 if (response.data.data.length === 0) {
-                    this.setState({ empty : true})
+                    this.setState({empty: true})
                 }
                 this.setState({questions: response.data.data})
             })
             .catch((error) => {
                 this.props.navigation.navigate('Login');
             })
+        const value = await AsyncStorage.getItem('subject' + itemId);
+        if (value !== null) {
+            let data = JSON.parse(value);
+            Alert.alert(
+                'Assessment',
+                'Continue with Assessment. Pick from where you left',
+                [
+                    {
+                        text: 'Continue Assessment', onPress: () => {
+                            this.setState({
+                                index: data.index,
+                                score: data.score
+                            })
+                            this.removeItemValue('subject' + itemId)
+                        }
+                    },
+                ],
+                {cancelable: false},
+            );
+        }
     }
 
     updateState() {
@@ -73,7 +140,8 @@ export default class Questions extends Component {
             ListClickDisabled: false
         })
     }
-    wrongAnswer(){
+
+    wrongAnswer() {
         Snackbar.show({
             title: 'wrong answer',
             backgroundColor: 'red',
@@ -97,18 +165,19 @@ export default class Questions extends Component {
             <Container>
                 <Header>
                     <Left>
-                        <Button transparent  onPress={() => this.props.navigation.goBack()}>
+                        <Button transparent onPress={() => this.props.navigation.goBack()}>
                             <Icon name='arrow-back'/>
                         </Button>
                     </Left>
                     <Body>
-                        <Title><Text>{subject.subject_name}</Text></Title>
+                    <Title><Text>{subject.subject_name}</Text></Title>
                     </Body>
                     <Right/>
                 </Header>
                 <Content>
                     <ScrollView contentContainerStyle={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                        {subject.score!=null && subject.score.attempts > 0  ? <Text>Retaking {subject.subject_name}...</Text> :
+                        {subject.score != null && subject.score.attempts > 0 ?
+                            <Text>Retaking {subject.subject_name}...</Text> :
                             <Text>All the best!!</Text>}
                         {this.state.questions.length > 0 && this.state.index !== this.state.questions.length - 1 ?
                             <View>
@@ -118,17 +187,18 @@ export default class Questions extends Component {
                                             until={this.state.questions[this.state.index].time_allocated}
                                             size={20}
                                             onFinish={() => {
-                                                if (this.state.answer_correct === 0 ){
-                                                this.setState({
-                                                    answer_correct: 2,
-                                                    counter: false,
-                                                    ListClickDisabled: false
-                                                })
-                                            }}}
+                                                if (this.state.answer_correct === 0) {
+                                                    this.setState({
+                                                        answer_correct: 2,
+                                                        counter: false,
+                                                        ListClickDisabled: false
+                                                    })
+                                                }
+                                            }}
                                         />
                                     </CardItem>
                                     <CardItem cardBody>
-                                        <Text style={{ fontFamily: 'Roboto' }}>{this.state.questions[this.state.index].question}</Text>
+                                        <HTML html={'<div style="font-size: large; margin: 5%; color: black;">'+this.state.questions[this.state.index].question+'</div>'} imagesMaxWidth={Dimensions.get('window').width} />
                                     </CardItem>
                                     <CardItem>
                                         <List>
@@ -137,12 +207,14 @@ export default class Questions extends Component {
                                                 this.state.questions[this.state.index].answer.map((answer, i) => (
                                                     this.state.ListClickDisabled ?
                                                         <ListItem
-                                                            onPress={() => this.state.questions[this.state.index].correct_answer === i ? this.updateState() : this.wrongAnswer()} key={i}>
-                                                            <Text style={{ fontFamily: 'sans-serif-thin' }}>{i + 1}. {answer.answer}</Text>
+                                                            onPress={() => this.state.questions[this.state.index].correct_answer === i ? this.updateState() : this.wrongAnswer()}
+                                                            key={i}>
+                                                            <Admob/>
+                                                            <HTML html={'<div style="font-size: large; color: black; width: 100% ">'+(i+1)+'. '+answer.answer+'</div>'} imagesMaxWidth={Dimensions.get('window').width} />
                                                         </ListItem>
                                                         :
                                                         <ListItem key={i}>
-                                                            <Text style={{ fontFamily: 'sans-serif-thin' }}>{i + 1}. {answer.answer}</Text>
+                                                            <HTML  html={'<div style="font-size: large; color: black; width: 100%">'+(i+1)+'. '+answer.answer+'</div>'} imagesMaxWidth={Dimensions.get('window').width} />
                                                         </ListItem>
 
                                                 ))
@@ -184,9 +256,10 @@ export default class Questions extends Component {
                                     </CardItem>
                                 </Card>
                             </View> : this.state.questions.length === 0 ?
-                                this.state.empty ? <View style={{flex: 1, alignItems: 'center',justifyContent: 'center'}}>
-                                    <Text>Oops!! something wrong on our end come back later.</Text>
-                                </View> : <Spinner color='red'/> : this.props.navigation.navigate('Score', {
+                                this.state.empty ?
+                                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                                        <Text>Oops!! something wrong on our end come back later.</Text>
+                                    </View> : <Spinner color='red'/> : this.props.navigation.navigate('Score', {
                                     id: itemId,
                                     Score: this.state.Score,
                                     subject: subject,

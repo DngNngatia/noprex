@@ -102,11 +102,11 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.ussd"
+        applicationId "com.derrick.ngatia.noprex"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "4"
         missingDimensionStrategy 'react-native-camera', 'general'
     }
     splits {
@@ -162,6 +162,7 @@ subprojects {
 }
 
 dependencies {
+    implementation project(':react-native-admob')
     implementation project(':react-native-camera')
     implementation project(':react-native-snackbar')
     implementation project(':@react-native-community_async-storage')

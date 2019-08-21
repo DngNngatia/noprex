@@ -23,6 +23,7 @@ import {
 import axios from 'axios'
 import {Linking, TouchableOpacity, View} from 'react-native';
 import SvgUri from 'react-native-svg-uri';
+import Admob from './Admob'
 import ViewMoreText from 'react-native-view-more-text';
 
 
@@ -260,6 +261,7 @@ export default class Topic extends Component {
                                                                 uri: 'http://noprex.tk' + topic.topic_avatar_url,
                                                             }}
                                                         />
+                                                        <Admob/>
                                                     </CardItem>
                                                     <CardItem>
                                                         <ViewMoreText

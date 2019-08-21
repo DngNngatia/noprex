@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {ScrollView} from 'react-native';
+import {Dimensions, ScrollView} from 'react-native';
 import {
     Container,
     Header,
@@ -19,6 +19,7 @@ import {
     Icon
 } from 'native-base';
 import axios from 'axios'
+import HTML from "react-native-render-html";
 
 export default class Review extends Component {
     state = {
@@ -65,7 +66,7 @@ export default class Review extends Component {
                         </Button>
                     </Left>
                     <Body>
-                        <Title><Text>{subject.subject_name}</Text></Title>
+                    <Title><Text>{subject.subject_name}</Text></Title>
                     </Body>
                     <Right/>
                 </Header>
@@ -73,12 +74,11 @@ export default class Review extends Component {
                     <ScrollView>
                         {this.state.questions.length > 0 && this.state.index !== this.state.questions.length - 1 ?
                             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                                <Card style={{elevation: 3, width: '100%'}}>
+                                <Card style={{elevation: 3, width: '100%', marginTop: '10%'}}>
                                     <CardItem cardBody style={{flexDirection: 'column', flex: 1}}>
-                                        <Text style={{
-                                            fontFamily: 'sans-serif-medium',
-                                            fontSize: 18
-                                        }}>{this.state.questions[this.state.index].question}</Text>
+                                        <HTML
+                                              html={'<div style="font-size: large; color: black; margin: 5%">' + this.state.questions[this.state.index].question + '</div>'}
+                                              imagesMaxWidth={Dimensions.get('window').width}/>
                                     </CardItem>
                                     <CardItem>
                                         <List style={{flexDirection: 'column', flex: 2}}>
@@ -87,15 +87,13 @@ export default class Review extends Component {
                                                 this.state.questions[this.state.index].answer.map((answer, i) => {
                                                     return this.state.questions[this.state.index].correct_answer === i ?
                                                         <ListItem style={{backgroundColor: 'green'}} key={i}>
-                                                            <Text style={{
-                                                                fontFamily: 'sans-serif-thin',
-                                                                fontSize: 18
-                                                            }}>{i + 1}. {answer.answer}</Text>
+                                                            <HTML
+                                                                  html={'<div style="font-size: large; width: 100%">' + (i + 1)+ '. ' + answer.answer + '</div>'}
+                                                                  imagesMaxWidth={Dimensions.get('window').width}/>
                                                         </ListItem> : <ListItem key={i}>
-                                                            <Text style={{
-                                                                fontFamily: 'sans-serif-thin',
-                                                                fontSize: 18
-                                                            }}>{i + 1}. {answer.answer}</Text>
+                                                            <HTML
+                                                                html={'<div style="font-size: large; width: 100%">' + (i + 1) + '. ' + answer.answer + '</div>'}
+                                                                imagesMaxWidth={Dimensions.get('window').width}/>
                                                         </ListItem>
                                                 })
                                             }

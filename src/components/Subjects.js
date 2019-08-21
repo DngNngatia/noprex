@@ -17,10 +17,10 @@ import {
     Text, Footer, FooterTab
 } from 'native-base';
 import axios from 'axios'
+import Comments from './Comments'
 import {ScrollView, TouchableOpacity, View, Alert} from 'react-native';
-import SvgUri from 'react-native-svg-uri';
 import Emoji from 'react-native-emoji';
-import ViewMoreText from "react-native-view-more-text";
+import Admob from "./Admob";
 
 
 export default class Subjects extends Component {
@@ -29,7 +29,11 @@ export default class Subjects extends Component {
         subjects: [],
         empty: false,
         topics: [],
-        loading: false
+        loading: false,
+        currentPage: null,
+        nextPageUrl: null,
+        prevPageUrl: null,
+        total: null,
     };
 
     like(subject) {
@@ -64,6 +68,46 @@ export default class Subjects extends Component {
         console.log(this.state)
     }
 
+    nextPage() {
+        this.setState({topics: []});
+        const {navigation} = this.props;
+        const token = navigation.getParam('token', null);
+        let config = {
+            headers: {'Authorization': "Bearer " + token}
+        };
+        axios.get(this.state.nextPageUrl, config).then(response => {
+            this.setState({
+                total: response.data.data.total,
+                prevPageUrl: response.data.data.prev_page_url !== null ? response.data.data.prev_page_url : null,
+                topics: response.data.data.data,
+                currentPage: response.data.data.current_page,
+                nextPageUrl: response.data.data.next_page_url !== null ? response.data.data.next_page_url : null
+            })
+        }).catch((error) => {
+            console.log(error.response)
+        })
+    }
+
+    previousPage() {
+        this.setState({topics: []})
+        const {navigation} = this.props;
+        const token = navigation.getParam('token', null);
+        let config = {
+            headers: {'Authorization': "Bearer " + token}
+        };
+        axios.get(this.state.prevPageUrl, config).then(response => {
+            this.setState({
+                total: response.data.data.total,
+                prevPageUrl: response.data.data.prev_page_url !== null ? response.data.data.prev_page_url : null,
+                topics: response.data.data.data,
+                currentPage: response.data.data.current_page,
+                nextPageUrl: response.data.data.next_page_url !== null ? response.data.data.next_page_url : null
+            })
+        }).catch((error) => {
+            console.log(error)
+        })
+    }
+
     componentWillMount() {
         const {navigation} = this.props;
         const itemId = navigation.getParam('id', null);
@@ -76,41 +120,138 @@ export default class Subjects extends Component {
             if (response.data.data.length === 0) {
                 this.setState({empty: true})
             }
+        }).catch((error) => {
+            this.props.navigation.navigate('Login');
         })
-            .catch((error) => {
-                this.props.navigation.navigate('Login');
-            })
     }
 
     renderAvailable() {
-        const {navigation} = this.props;
-        const token = navigation.getParam('token', null);
-        let config = {
-            headers: {'Authorization': "Bearer " + token}
-        };
-        axios.get('http://noprex.tk/api/topics/available', config).then(response => {
-            this.setState({topics: response.data.data})
-        }).catch((error) => {
-        })
-        return this.state.topics.length ?
-            <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                <Text style={{color: 'green', fontSize: 18, fontFamily: 'sans-serif-light'}}>Already available</Text>
-                <List>
-                    {
-                        this.state.topics.map((topic, i) => (
-                            <ListItem key={i} style={{borderWidth: 2, borderColor: 'black', flexDirection: 'column'}}>
-                                <Text>{topic.subject_name}  </Text>
-                                <Button onPress={() => this.props.navigation.navigate('Questions', {
-                                    id: topic.id,
-                                    subject: topic,
-                                    token: token
-                                })} small transparent style={{borderColor: 'yellow', borderWidth: 1, margin: 5}}><Text>Measure
-                                    Now</Text></Button>
-                            </ListItem>
-                        ))
-                    }
-                </List>
-            </View> : <Spinner color='red'/>
+        if (this.state.currentPage === null) {
+            const {navigation} = this.props;
+            const token = navigation.getParam('token', null);
+            let config = {
+                headers: {'Authorization': "Bearer " + token}
+            };
+            axios.get('http://noprex.tk/api/topics/available', config).then(response => {
+                if (response.data.data.data.length === 0) {
+                    let available = [{
+                        subject_name: 'Congrats you have completed all quizzes',
+                        id: 'xxyy'
+                    }]
+                    this.setState({topics: available})
+                } else {
+                    this.setState({
+                        total: response.data.data.total,
+                        prevPageUrl: response.data.data.prev_page_url !== null ? response.data.data.prev_page_url : null,
+                        topics: response.data.data.data,
+                        currentPage: response.data.data.current_page,
+                        nextPageUrl: response.data.data.next_page_url !== null ? response.data.data.next_page_url : null
+                    })
+                }
+            }).catch((error) => {
+            })
+            return this.state.topics.length ?
+                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                    <Text style={{color: 'green', fontSize: 18, fontFamily: 'sans-serif-light'}}>Already
+                        available</Text>
+                    <List>
+                        {
+                            this.state.topics.map((topic, i) => (
+                                <ListItem key={i} style={{flexDirection: 'column'}}>
+                                    <Text>{topic.subject_name}  </Text>
+                                    {topic.id === 'xxyy' ? <Text/> :
+                                        <Button onPress={() => this.props.navigation.navigate('Questions', {
+                                            id: topic.id,
+                                            subject: topic,
+                                            token: token
+                                        })} style={{marginTop: 6}} small success><Text>Measure
+                                            Now</Text></Button>
+                                    }
+
+                                </ListItem>
+                            ))
+                        }
+                        <Footer>
+                            <FooterTab>
+                                {
+                                    this.state.prevPageUrl != null ?
+                                        <Button onPress={() => this.previousPage()} dark iconLeft>
+                                            <Icon name="arrow-back"/>
+                                            <Text>Previous</Text>
+                                        </Button> : <Button disabled iconLeft light>
+                                            <Icon name="arrow-back"/>
+                                            <Text>Previous</Text>
+                                        </Button>
+                                }
+                                <Text> </Text>
+                                {
+                                    this.state.nextPageUrl != null ?
+                                        <Button onPress={() => this.nextPage()} iconRight dark>
+                                            <Text>Next Page</Text>
+                                            <Icon name="arrow-forward"/>
+                                        </Button> : <Button disabled iconRight light>
+                                            <Text>Next Page</Text>
+                                            <Icon name="arrow-forward"/>
+                                        </Button>
+
+                                }
+                            </FooterTab>
+                        </Footer>
+                    </List>
+                </View> : <Spinner color='red'/>
+        } else {
+            const {navigation} = this.props;
+            const token = navigation.getParam('token', null);
+            return this.state.topics.length ?
+                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                    <Text style={{color: 'green', fontSize: 18, fontFamily: 'sans-serif-light'}}>Already
+                        available</Text>
+                    <List>
+                        {
+                            this.state.topics.map((topic, i) => (
+                                <ListItem key={i} style={{flexDirection: 'column'}}>
+                                    <Text>{topic.subject_name}  </Text>
+                                    {topic.id === 'xxyy' ? <Text/> :
+                                        <Button onPress={() => this.props.navigation.navigate('Questions', {
+                                            id: topic.id,
+                                            subject: topic,
+                                            token: token
+                                        })} style={{marginTop: 6}} small success><Text>Measure
+                                            Now</Text></Button>
+                                    }
+
+                                </ListItem>
+                            ))
+                        }
+                        <Footer>
+                            <FooterTab>
+                                {
+                                    this.state.prevPageUrl != null ?
+                                        <Button onPress={() => this.previousPage()} dark iconLeft>
+                                            <Icon name="arrow-back"/>
+                                            <Text>Previous</Text>
+                                        </Button> : <Button disabled iconLeft light>
+                                            <Icon name="arrow-back"/>
+                                            <Text>Previous</Text>
+                                        </Button>
+                                }
+                                <Text> </Text>
+                                {
+                                    this.state.nextPageUrl != null ?
+                                        <Button onPress={() => this.nextPage()} iconRight dark>
+                                            <Text>Next Page</Text>
+                                            <Icon name="arrow-forward"/>
+                                        </Button> : <Button disabled iconRight light>
+                                            <Text>Next Page</Text>
+                                            <Icon name="arrow-forward"/>
+                                        </Button>
+
+                                }
+                            </FooterTab>
+                        </Footer>
+                    </List>
+                </View> : <Spinner color='red'/>
+        }
 
     }
 
@@ -127,7 +268,7 @@ export default class Subjects extends Component {
                         </Button>
                     </Left>
                     <Body>
-                        <Title><Text>{topic}</Text></Title>
+                    <Title><Text>{topic}</Text></Title>
                     </Body>
                     <Right/>
                 </Header>
@@ -138,27 +279,27 @@ export default class Subjects extends Component {
                                 this.state.subjects.map((subject, i) => (
                                     <ListItem key={i}>
                                         <TouchableOpacity onPress={() => {
-                                            if (subject.score === null || subject.score.attempts < 3) {
-                                                this.props.navigation.navigate('Questions', {
-                                                    id: subject.id,
-                                                    subject: subject,
-                                                    token: token
-                                                })
-                                            } else {
-                                                Alert.alert(
-                                                    'Sorry, Maximum Attempts!!',
-                                                    'You have reached the maximum number of tries for this subject.Please check for more of our topics on the platform.',
-                                                    [
-                                                        {
-                                                            text: 'Cancel',
-                                                            onPress: () => console.log('Cancel Pressed'),
-                                                            style: 'cancel',
-                                                        },
-                                                        {text: 'OK', onPress: () => console.log('OK Pressed')},
-                                                    ],
-                                                    {cancelable: true},
-                                                );
-                                            }
+                                            Alert.alert(
+                                                'Assessment',
+                                                'The countdown will start once you click start assessment 🕐🕐🕐🕐🕐🕐🕐🕐. Make sure you are in a quiet and peaceful location',
+                                                [
+                                                    {
+                                                        text: 'Cancel',
+                                                        onPress: () => console.log('Cancel Pressed'),
+                                                        style: 'cancel',
+                                                    },
+                                                    {
+                                                        text: 'Start assessment', onPress: () => {
+                                                            this.props.navigation.navigate('Questions', {
+                                                                id: subject.id,
+                                                                subject: subject,
+                                                                token: token
+                                                            })
+                                                        }
+                                                    },
+                                                ],
+                                                {cancelable: true},
+                                            );
                                         }}>
                                             <Card style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                                                 <CardItem>
@@ -166,13 +307,14 @@ export default class Subjects extends Component {
                                                         fontFamily: 'sans-serif-medium',
                                                         fontSize: 18
                                                     }}>{subject.subject_name}</Text>
+                                                    <Admob/>
                                                 </CardItem>
                                                 <CardItem>
                                                     <Left>
                                                         <Button light onPress={() => this.like(subject)}>
                                                             {
                                                                 this.state.loading ? <Icon active name="train"/> :
-                                                                    <Icon active name="thumbs-up"/>
+                                                                    <Icon color='blue' active name="thumbs-up"/>
                                                             }
 
                                                             <Text>{subject.likes}</Text>
@@ -180,22 +322,22 @@ export default class Subjects extends Component {
 
                                                     </Left>
                                                     <Body>
-                                                        <Button light onPress={() =>
-                                                            this.props.navigation.navigate('Comments', {
-                                                                token: token,
-                                                                comments: subject.comments,
-                                                                subject_id: subject.id
-                                                            })
-                                                        }>
-                                                            <Icon active name="chatbubbles"/>
-                                                            <Text>{subject.no_comments}</Text>
-                                                        </Button>
+                                                    <Button light onPress={() =>
+                                                        this.props.navigation.navigate('Comments', {
+                                                            token: token,
+                                                            comments: subject.comments,
+                                                            subject_id: subject.id
+                                                        })
+                                                    }>
+                                                        <Icon active name="chatbubbles"/>
+                                                        <Text>{subject.no_comments}</Text>
+                                                    </Button>
                                                     </Body>
                                                     <Right>
                                                         <Button light onPress={() => this.dislike(subject)}>
                                                             {
                                                                 this.state.loading ? <Icon active name="train"/> :
-                                                                    <Icon active name="thumbs-down"/>
+                                                                    <Icon color='blue' active name="thumbs-down"/>
                                                             }
                                                             <Text>{subject.dislikes}</Text>
                                                         </Button>

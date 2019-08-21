@@ -1,10 +1,9 @@
 import React, {Component} from 'react';
-import {Container, Text, Spinner, Button, View, List, ListItem, Content, Form, Item, Input, Label} from 'native-base';
+import {Button, Container, Content, Form, Input, Item, Spinner, Text} from 'native-base';
 import {Image} from 'react-native';
 import image from '../../images/logo.png'
 import axios from 'axios'
 import AsyncStorage from '@react-native-community/async-storage';
-
 
 export default class Login extends Component {
 
@@ -57,7 +56,7 @@ export default class Login extends Component {
                 <Content contentContainerStyle={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                     <Image source={image} style={{height: 200, width: 200}}/>
                     {
-                        this.state.errors != '' ?
+                        this.state.errors !== '' ?
                             <Text style={{backgroundColor: '#FF0000', fontSize: 19}}>{this.state.errors}</Text> : null
                     }
                     <Form style={{height: 300, width: 300, padding: 10, margin: 5}}>
@@ -95,6 +94,10 @@ export default class Login extends Component {
                             borderRadius: 30,
                         }}>
                             <Text>Register</Text>
+                        </Button>
+                        <Button onPress={() => this.props.navigation.navigate('ResetPassword')} transparent>
+                            <Text style={{textTransform: 'capitalize', textDecorationLine: 'underline', color: 'blue'}}>Forgot
+                                password? Reset</Text>
                         </Button>
 
                     </Form>

@@ -46,18 +46,15 @@ export default class Comments extends Component {
         const {navigation} = this.props;
         const subject_id = navigation.getParam('subject_id', null);
         const token = navigation.getParam('token', null);
-        messages.push(messages[0]);
-        this.setState(previousState => ({
-            messages: messages,
-        }))
+        this.setState({messages: [...this.state.messages,messages[0]]});
         let config = {
             headers: {'Authorization': "Bearer " + token}
         };
         axios.post('http://noprex.tk/api/comment/' + subject_id, {
             comment: messages[0].text
         }, config).then((response) => {
+            console.log(response.data.data)
         }).catch((error) => {
-            console.log(error)
         })
     }
 

@@ -56,27 +56,26 @@ export default class GSettings extends Component {
                         <Text style={styles.paragraph}>Developed by Derrick Ngatia.</Text>
                         <Button onPress={() => this.openLink()}>
                             <Icon name="link"/>
-                            <Text>Visit developer LinkedIn Profile</Text>
+                            <Text>Visit developer Linkedin Profile</Text>
                         </Button>
                         <Text style={styles.paragraph}>Terms and Conditions</Text>
                         <Text style={styles.paragraph}>
                             You are specifically restricted from all of the following:
-                            You are specifically restricted from all of the following:
-                            publishing any Website material in any other media;
-                            selling, sublicensing and/or otherwise commercializing any Website material;
-                            publicly performing and/or showing any Website material;
-                            using this Website in any way that is or may be damaging to this Website;
-                            using this Website in any way that impacts user access to this Website;
-                            using this Website contrary to applicable laws and regulations, or in any way may
-                            cause harm to the Website, or to any person or business entity;
+                            publishing any app material in any other media;
+                            selling, sublicense and/or otherwise commercializing any app material;
+                            publicly performing and/or showing any app material;
+                            using this app in any way that is or may be damaging to this app;
+                            using this app in any way that impacts user access to this app;
+                            using this app contrary to applicable laws and regulations, or in any way may
+                            cause harm to the app, or to any person or business entity;
                             engaging in any data mining, data harvesting, data extracting
-                            or any other similar activity in relation to this Website;
-                            using this Website to engage in any advertising or marketing.
-                            Certain areas of this Website are restricted from being access by
+                            or any other similar activity in relation to this app;
+                            using this app to engage in any advertising or marketing.
+                            Certain areas of this app are restricted from being access by
                             you and Company Name may further restrict access by you
-                            to any areas of this Website, at any time, in absolute discretion.
+                            to any areas of this app, at any time, in absolute discretion.
                             Any user ID and password
-                            you may have for this Website are confidential and you must maintain confidentiality
+                            you may have for this app are confidential and you must maintain confidentiality
                             as well.
                         </Text>
                         <Text style={{borderRadius: 10, borderWidth: 1, borderColor: 'green', fontSize: 18}}>@noprex
